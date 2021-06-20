@@ -4,3 +4,5 @@ pong
 rect
 **/data/**
 **/target/**
+**/*.hack
+**/*.asm
