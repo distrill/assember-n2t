@@ -34,8 +34,10 @@ fn main() -> Result<()>  {
     let config = Config::parse(env::args().collect())?;
     let mut assember = Assembler::new(&config.srcname)?;
 
+    println!("assembling {}", &config.srcname);
     assember.process()?;
     assember.write_bin(&config.binname)?;
+    println!("written to {}", &config.binname);
     
     Ok(())
 }
