@@ -1,5 +1,6 @@
 # n2t-assembler
-Assembler for the hack assembly language, as specified in the [Nand 2 Tetris book](https://www.nand2tetris.org/).
+Assembler for the hack assembly language, as specified in the [Nand 2 Tetris book](https://www.nand2tetris.org/).    
+These `hack` bin files can be run with the CPU emulator provided to accompany the aforementioned book.
 
 ### usage
 Accepts an `asm` filename as an argument, and writes the binary code to a `hack` file of the same name.
