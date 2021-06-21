@@ -4,14 +4,16 @@ use std::{
     path::Path,
 };
 
-use anyhow::{Result};
+use anyhow::Result;
 
-use crate::parser::{Line};
+use crate::parser::Line;
+use crate::symbol_table::SymbolTable;
 
 #[derive(Debug)]
 pub struct Assembler {
   src: Vec<String>,
-  bin: Vec<String>
+  bin: Vec<String>,
+  table: SymbolTable,
 }
 
 impl Assembler {
@@ -23,12 +25,30 @@ impl Assembler {
 	    .collect();
 
         let bin = Vec::new();
-        Ok(Assembler{ src, bin })
+        let table = SymbolTable::new();
+
+        Ok(Assembler{ src, bin, table })
     }
 
     pub fn process(&mut self) -> Result<()> {
+        // first pass - swap out the symbols
+        let mut ln = 0;
         for l in &self.src {
-            let line = Line::new(l)?;
+            let line = Line::new(l, &mut SymbolTable::new())?;
+            match line {
+                Line::Label(label) => {
+                    &self.table.insert(label.clone(), ln);
+                },
+                Line::A{..} | Line::C{..} => {
+                    ln += 1;
+                }
+                _ => {},
+            };
+        }
+        
+        // second pass - generate the binary
+        for l in &self.src {
+            let line = Line::new(l, &mut self.table)?;
             match line {
                 Line::A{..} | Line::C{..} => {
                     self.bin.push(line.to_bin()?);

@@ -4,6 +4,7 @@ use anyhow::{anyhow, Result};
 
 mod parser;
 mod assembler;
+mod symbol_table;
 
 use assembler::Assembler;
 
@@ -20,7 +21,10 @@ impl Config {
         }
         let srcname = args[1].clone();
         if !srcname.ends_with(".asm") {
-            return Err(anyhow!("file must be an asm file. (provided: {})", srcname));
+            return Err(anyhow!(
+                "file must be an asm file. (provided: {})",
+                srcname,
+            ));
         }
 
         let binname = srcname.replace(".asm", ".hack");

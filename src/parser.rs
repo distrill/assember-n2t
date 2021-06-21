@@ -1,10 +1,11 @@
 use anyhow::{anyhow, Result};
 use stringsort::insertsort;
 
-/// we implement a double parse here, from string to token, and then from token
-/// to binary string. with an assember as simple as this one, we could have gone
-/// straight from string to bin string, but this way we retain semantics for 
-/// each parsed token
+use crate::symbol_table::SymbolTable;
+
+/// we parse here from string to token, and then from token to binary. with an
+/// assember as simple as this one, we could have gone  straight from string
+/// to bin string, but this way we retain semantics for each parsed token
 ///
 /// among other things, this allows us to print the tokens with human readable
 /// names and descriptions
@@ -33,6 +34,9 @@ impl Token<Dest> for Dest {
             Some(d) => {
                 // alphabetize here to support any ordered combination
                 // of AMD
+                // if we were parsing straight to binary string, it would have
+                // been cleaner to parse each letter and set the appropriate
+                // bits. but this allows us to keep explicit tokens
                 let alpha = insertsort(&d[..]);
                 match &alpha[..] {
                     "M" => Ok(M),
@@ -218,6 +222,7 @@ impl Token<Jump> for Jump {
 #[derive(Debug)]
 pub enum Line {
     Whitespace(String),
+    Label(String),
     A {
         address: u16,
     },
@@ -229,13 +234,21 @@ pub enum Line {
 }
 
 impl Line {
-    pub fn new(line: &String) -> Result<Line> {
+    pub fn new(line: &String, table: &mut SymbolTable) -> Result<Line> {
+        let line = &line.trim().to_string();
         if line.starts_with("//") || line == "" {
             Ok(Line::Whitespace(line.clone()))
-        }
-        else if line.starts_with("@") {
-            let address = line[1..].parse()?;
-            Ok(Line::A { address })
+        } else if line.starts_with("@") {
+            let symbol_or_address = line[1..].to_string();
+            let address = match symbol_or_address.parse() {
+                Ok(a) => a,
+                Err(..) => {
+                    table.get(symbol_or_address)
+                },
+            };
+            Ok(Line::A{ address })
+        } else if line.starts_with("(") {
+            Ok(Line::Label(line[1..line.len()-1].to_string()))
         } else {
             // we can safely unwrap throughout here because there will always
             // be at least a first element
