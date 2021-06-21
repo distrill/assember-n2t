@@ -34,6 +34,9 @@ impl Assembler {
         // first pass - swap out the symbols
         let mut ln = 0;
         for l in &self.src {
+            // we only care about parsing this line to get the line type
+            // so we use a throwaway symbol table, because we don't want to
+            // spoil our real table
             let line = Line::new(l, &mut SymbolTable::new())?;
             match line {
                 Line::Label(label) => {
